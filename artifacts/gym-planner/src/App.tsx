@@ -13,6 +13,7 @@ import Progress from "./pages/progress";
 import Nutrition from "./pages/nutrition";
 import NutritionDetail from "./pages/nutrition-detail";
 import CalcPage from "./pages/calculator";
+import Personalize from "./pages/personalize";
 import NotFound from "./pages/not-found";
 
 const queryClient = new QueryClient({
@@ -40,6 +41,7 @@ export default function App() {
           <Route path="/nutrition" component={Nutrition} />
           <Route path="/nutrition/:id" component={NutritionDetail} />
           <Route path="/calculator" component={CalcPage} />
+          <Route path="/personalize" component={Personalize} />
           <Route component={NotFound} />
         </Switch>
       </Layout>
