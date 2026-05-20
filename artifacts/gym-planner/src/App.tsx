@@ -14,6 +14,8 @@ import Nutrition from "./pages/nutrition";
 import NutritionDetail from "./pages/nutrition-detail";
 import CalcPage from "./pages/calculator";
 import Personalize from "./pages/personalize";
+import MuscleMap from "./pages/muscle-map";
+import MuscleExercises from "./pages/muscle-exercises";
 import NotFound from "./pages/not-found";
 
 const queryClient = new QueryClient({
@@ -42,6 +44,8 @@ export default function App() {
           <Route path="/nutrition/:id" component={NutritionDetail} />
           <Route path="/calculator" component={CalcPage} />
           <Route path="/personalize" component={Personalize} />
+          <Route path="/muscle-map" component={MuscleMap} />
+          <Route path="/muscle-map/:slug" component={MuscleExercises} />
           <Route component={NotFound} />
         </Switch>
       </Layout>

@@ -1,7 +1,7 @@
 import { Link, useLocation } from "wouter";
 import {
   LayoutDashboard, Dumbbell, ClipboardList, BookOpen,
-  LineChart, Apple, Calculator, Sparkles, Menu, X
+  LineChart, Apple, Calculator, Sparkles, Menu, X, PersonStanding
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
@@ -9,7 +9,8 @@ import { Button } from "./ui/button";
 
 const navItems = [
   { href: "/", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/personalize", label: "My Plan", icon: Sparkles },
+  { href: "/personalize", label: "My Plan", icon: Sparkles, badge: "NEW" },
+  { href: "/muscle-map", label: "Muscle Map", icon: PersonStanding },
   { href: "/exercises", label: "Exercises", icon: Dumbbell },
   { href: "/plans", label: "Plans", icon: ClipboardList },
   { href: "/log", label: "Log", icon: BookOpen },
