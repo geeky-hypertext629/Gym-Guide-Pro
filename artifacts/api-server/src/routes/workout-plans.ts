@@ -1,20 +1,80 @@
 import { Router } from "express";
-import { db } from "@workspace/db";
-import { workoutPlansTable, workoutDaysTable, planDayExercisesTable } from "@workspace/db";
-import { eq } from "drizzle-orm";
-import { getExerciseWithMuscles } from "./exercises.js";
+import { WorkoutPlan } from "../models/WorkoutPlan.js";
+import { Exercise } from "../models/Exercise.js";
+import { Muscle } from "../models/Muscle.js";
 
 const router = Router();
+
+async function buildPlanDetail(plan: any) {
+  const allMuscles = await Muscle.find().lean();
+  const muscleMap = new Map(allMuscles.map((m: any) => [m._id.toString(), m]));
+
+  const days = await Promise.all(
+    (plan.days ?? []).map(async (day: any) => {
+      const exercises = await Promise.all(
+        (day.exercises ?? []).map(async (pe: any) => {
+          const ex = await Exercise.findById(pe.exerciseId).lean() as any;
+          if (!ex) return null;
+
+          const primaryMuscles: any[] = [];
+          const secondaryMuscles: any[] = [];
+          for (const em of ex.muscles ?? []) {
+            const mid = em.muscleId?.toString();
+            const muscle = muscleMap.get(mid);
+            if (!muscle) continue;
+            const entry = { id: mid, name: (muscle as any).name, bodyPart: (muscle as any).bodyPart, description: (muscle as any).description ?? null };
+            if (em.isPrimary) primaryMuscles.push(entry);
+            else secondaryMuscles.push(entry);
+          }
+
+          return {
+            id: ex._id.toString(),
+            name: ex.name,
+            difficulty: ex.difficulty,
+            equipment: ex.equipment,
+            description: ex.description ?? null,
+            instructions: ex.instructions ?? null,
+            sets: ex.sets ?? null,
+            repsMin: ex.repsMin ?? null,
+            repsMax: ex.repsMax ?? null,
+            restSeconds: ex.restSeconds ?? null,
+            videoUrl: ex.videoUrl ?? null,
+            primaryMuscles,
+            secondaryMuscles,
+          };
+        })
+      );
+
+      return {
+        id: day._id?.toString() ?? day.dayNumber.toString(),
+        dayNumber: day.dayNumber,
+        name: day.name,
+        focus: day.focus ?? null,
+        exercises: exercises.filter(Boolean),
+      };
+    })
+  );
+
+  return {
+    id: plan._id.toString(),
+    name: plan.name,
+    level: plan.level,
+    daysPerWeek: plan.daysPerWeek,
+    goal: plan.goal,
+    description: plan.description ?? null,
+    estimatedWeeks: plan.estimatedWeeks ?? null,
+    days,
+  };
+}
 
 router.get("/", async (req, res) => {
   try {
     const { level } = req.query as { level?: string };
-    const plans = level
-      ? await db.select().from(workoutPlansTable).where(eq(workoutPlansTable.level, level)).orderBy(workoutPlansTable.id)
-      : await db.select().from(workoutPlansTable).orderBy(workoutPlansTable.id);
+    const filter = level ? { level } : {};
+    const plans = await WorkoutPlan.find(filter).sort({ _id: 1 }).lean();
 
-    res.json(plans.map((p) => ({
-      id: p.id,
+    res.json(plans.map((p: any) => ({
+      id: p._id.toString(),
       name: p.name,
       level: p.level,
       daysPerWeek: p.daysPerWeek,
@@ -30,42 +90,9 @@ router.get("/", async (req, res) => {
 
 router.get("/:id", async (req, res) => {
   try {
-    const id = parseInt(req.params.id, 10);
-    const [plan] = await db.select().from(workoutPlansTable).where(eq(workoutPlansTable.id, id)).limit(1);
-    if (!plan) return res.status(404).json({ error: "Not found" });
-
-    const days = await db.select().from(workoutDaysTable).where(eq(workoutDaysTable.planId, id)).orderBy(workoutDaysTable.dayNumber);
-
-    const daysWithExercises = await Promise.all(
-      days.map(async (day) => {
-        const pde = await db
-          .select()
-          .from(planDayExercisesTable)
-          .where(eq(planDayExercisesTable.dayId, day.id))
-          .orderBy(planDayExercisesTable.orderIndex);
-
-        const exercises = await Promise.all(pde.map((p) => getExerciseWithMuscles(p.exerciseId)));
-
-        return {
-          id: day.id,
-          dayNumber: day.dayNumber,
-          name: day.name,
-          focus: day.focus ?? null,
-          exercises: exercises.filter(Boolean),
-        };
-      })
-    );
-
-    res.json({
-      id: plan.id,
-      name: plan.name,
-      level: plan.level,
-      daysPerWeek: plan.daysPerWeek,
-      goal: plan.goal,
-      description: plan.description ?? null,
-      estimatedWeeks: plan.estimatedWeeks ?? null,
-      days: daysWithExercises,
-    });
+    const plan = await WorkoutPlan.findById(req.params.id).lean();
+    if (!plan) { res.status(404).json({ error: "Not found" }); return; }
+    res.json(await buildPlanDetail(plan));
   } catch (err) {
     req.log.error({ err }, "Failed to get workout plan");
     res.status(500).json({ error: "Internal server error" });

@@ -45,10 +45,10 @@ const slugToMuscleNames: Record<string, string[]> = {
   "hamstrings": ["Hamstrings"],
   "lats": ["Lats", "Latissimus Dorsi"],
   "lower-back": ["Lower Back", "Erector Spinae"],
-  "mid-back": ["Mid Back", "Rhomboids", "Middle Back"],
+  "mid-back": ["Mid Back", "Rhomboids", "Middle Back", "Upper Back"],
   "obliques": ["Obliques"],
   "quads": ["Quads", "Quadriceps"],
-  "shoulders": ["Shoulders", "Deltoids", "Anterior Deltoid"],
+  "shoulders": ["Front Deltoid", "Side Deltoid", "Rear Deltoid", "Shoulders", "Deltoids"],
   "traps": ["Traps", "Trapezius"],
   "triceps": ["Triceps"],
 };
@@ -135,17 +135,19 @@ export default function MuscleExercises() {
   const { data: muscles } = useListMuscles();
   const { data: allExercises, isLoading } = useListExercises({});
 
-  // Find the muscle ID(s) that match this slug
-  const matchedMuscle = muscles?.find((m) =>
+  // Find all muscle IDs that match this slug (e.g. shoulders → 3 deltoid muscles)
+  const matchedMuscles = muscles?.filter((m) =>
     possibleNames.some((n) => m.name.toLowerCase() === n.toLowerCase())
-  );
+  ) ?? [];
 
-  // Filter exercises: either by matched muscle ID (primary) or by name match
+  const matchedMuscleIds = new Set(matchedMuscles.map((m) => m.id));
+
+  // Filter exercises: primary or secondary muscle matches any of the matched IDs
   const exercises = allExercises?.filter((ex) => {
-    if (matchedMuscle) {
+    if (matchedMuscleIds.size > 0) {
       return (
-        ex.primaryMuscles?.some((m) => m.id === matchedMuscle.id) ||
-        ex.secondaryMuscles?.some((m) => m.id === matchedMuscle.id)
+        ex.primaryMuscles?.some((m) => matchedMuscleIds.has(m.id)) ||
+        ex.secondaryMuscles?.some((m) => matchedMuscleIds.has(m.id))
       );
     }
     // Fallback: filter by primary muscle name
@@ -174,7 +176,7 @@ export default function MuscleExercises() {
       <div>
         <div className="flex items-center gap-3 mb-1">
           <h1 className="text-4xl font-bold tracking-tight">{displayName}</h1>
-          {matchedMuscle && (
+          {matchedMuscles.length > 0 && (
             <Badge variant="outline" className="text-sm px-3">
               {sorted.length} exercise{sorted.length !== 1 ? "s" : ""}
             </Badge>

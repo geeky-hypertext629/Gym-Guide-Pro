@@ -6,6 +6,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Target, Clock, Repeat, Layers } from "lucide-react";
 import { motion } from "framer-motion";
+import { getGifUrl } from "@/lib/exercise-gifs";
 
 const difficultyColor: Record<string, string> = {
   beginner: "bg-green-500/10 text-green-600 border-green-500/20",
@@ -15,8 +16,9 @@ const difficultyColor: Record<string, string> = {
 
 export default function ExerciseDetail() {
   const [, params] = useRoute("/exercises/:id");
-  const id = params?.id ? parseInt(params.id) : 0;
-  const { data: ex, isLoading } = useGetExercise(id, { query: { enabled: !!id, queryKey: getGetExerciseQueryKey(id) } });
+  const id = params?.id ?? "";
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const { data: ex, isLoading } = useGetExercise(id as any, { query: { enabled: !!id, queryKey: getGetExerciseQueryKey(id as any) } });
 
   if (isLoading) {
     return (
@@ -55,6 +57,21 @@ export default function ExerciseDetail() {
         <h1 className="text-4xl font-bold tracking-tight" data-testid="text-exercise-name">{ex.name}</h1>
         {ex.description && <p className="text-muted-foreground mt-2 text-lg">{ex.description}</p>}
       </div>
+
+      {/* GIF demo */}
+      {(() => {
+        const gifUrl = getGifUrl(ex.name);
+        return gifUrl ? (
+          <div className="rounded-xl overflow-hidden border bg-muted">
+            <img
+              src={gifUrl}
+              alt={`${ex.name} demonstration`}
+              className="w-full max-h-72 object-contain"
+              onError={(e) => { (e.currentTarget.parentElement as HTMLElement).style.display = "none"; }}
+            />
+          </div>
+        ) : null;
+      })()}
 
       {/* Prescription */}
       <div className="grid grid-cols-3 gap-4">

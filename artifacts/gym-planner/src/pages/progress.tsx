@@ -12,9 +12,11 @@ export default function Progress() {
 
   const { data: logs, isLoading: logsLoading } = useListWorkoutLogs();
   const { data: exercises } = useListExercises({});
-  const exerciseIdNum = selectedExerciseId ? parseInt(selectedExerciseId) : 0;
-  const { data: progressData, isLoading: progressLoading } = useGetExerciseProgress(exerciseIdNum, {
-    query: { enabled: !!exerciseIdNum, queryKey: getGetExerciseProgressQueryKey(exerciseIdNum) },
+  const exerciseIdNum = selectedExerciseId ?? "";
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const { data: progressData, isLoading: progressLoading } = useGetExerciseProgress(exerciseIdNum as any, {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    query: { enabled: !!exerciseIdNum, queryKey: getGetExerciseProgressQueryKey(exerciseIdNum as any) },
   });
 
   const completedLogs = logs?.filter((l) => l.status === "completed") ?? [];

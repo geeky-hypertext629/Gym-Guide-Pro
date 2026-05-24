@@ -15,8 +15,9 @@ const levelColor: Record<string, string> = {
 
 export default function PlanDetail() {
   const [, params] = useRoute("/plans/:id");
-  const id = params?.id ? parseInt(params.id) : 0;
-  const { data: plan, isLoading } = useGetWorkoutPlan(id, { query: { enabled: !!id, queryKey: getGetWorkoutPlanQueryKey(id) } });
+  const id = params?.id ?? "";
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const { data: plan, isLoading } = useGetWorkoutPlan(id as any, { query: { enabled: !!id, queryKey: getGetWorkoutPlanQueryKey(id as any) } });
 
   if (isLoading) {
     return (

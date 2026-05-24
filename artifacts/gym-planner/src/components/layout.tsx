@@ -1,11 +1,13 @@
 import { Link, useLocation } from "wouter";
 import {
   LayoutDashboard, Dumbbell, ClipboardList, BookOpen,
-  LineChart, Apple, Calculator, Sparkles, Menu, X, PersonStanding
+  LineChart, Apple, Calculator, Sparkles, Menu, X, PersonStanding,
+  LogOut, LogIn, User
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
 import { Button } from "./ui/button";
+import { useAuth } from "@/context/AuthContext";
 
 const navItems = [
   { href: "/", label: "Dashboard", icon: LayoutDashboard },
@@ -13,8 +15,8 @@ const navItems = [
   { href: "/muscle-map", label: "Muscle Map", icon: PersonStanding },
   { href: "/exercises", label: "Exercises", icon: Dumbbell },
   { href: "/plans", label: "Plans", icon: ClipboardList },
-  { href: "/log", label: "Log", icon: BookOpen },
-  { href: "/progress", label: "Progress", icon: LineChart },
+  { href: "/log", label: "Log", icon: BookOpen, requiresAuth: true },
+  { href: "/progress", label: "Progress", icon: LineChart, requiresAuth: true },
   { href: "/nutrition", label: "Nutrition", icon: Apple },
   { href: "/calculator", label: "TDEE", icon: Calculator },
 ];
@@ -22,6 +24,7 @@ const navItems = [
 export function Layout({ children }: { children: React.ReactNode }) {
   const [location] = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const { user, logout } = useAuth();
 
   const isActive = (href: string) =>
     href === "/"
@@ -71,7 +74,36 @@ export function Layout({ children }: { children: React.ReactNode }) {
         </nav>
 
         {/* Footer */}
-        <div className="p-4 border-t">
+        <div className="p-4 border-t space-y-2">
+          {user ? (
+            <>
+              <div className="flex items-center gap-2 px-1 pb-1">
+                <div className="p-1.5 rounded-full bg-primary/10">
+                  <User className="h-3.5 w-3.5 text-primary" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-xs font-semibold truncate">{user.name}</p>
+                  <p className="text-[10px] text-muted-foreground truncate">{user.email}</p>
+                </div>
+              </div>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="w-full justify-start text-muted-foreground hover:text-foreground h-8 text-xs px-2"
+                onClick={logout}
+              >
+                <LogOut className="h-3.5 w-3.5 mr-2" />
+                Sign out
+              </Button>
+            </>
+          ) : (
+            <Link href="/login">
+              <Button variant="outline" size="sm" className="w-full h-8 text-xs">
+                <LogIn className="h-3.5 w-3.5 mr-2" />
+                Sign in
+              </Button>
+            </Link>
+          )}
           <p className="text-xs text-muted-foreground text-center">GymGuide &copy; {new Date().getFullYear()}</p>
         </div>
       </aside>
@@ -119,6 +151,27 @@ export function Layout({ children }: { children: React.ReactNode }) {
                 </Link>
               );
             })}
+            <div className="pt-2 border-t">
+              {user ? (
+                <button
+                  onClick={() => { logout(); setMobileMenuOpen(false); }}
+                  className="flex items-center gap-3 px-4 py-3 rounded-lg transition-all text-sm font-medium cursor-pointer text-muted-foreground hover:bg-accent/10 hover:text-foreground w-full"
+                >
+                  <LogOut className="h-4 w-4 shrink-0" />
+                  Sign out ({user.name})
+                </button>
+              ) : (
+                <Link href="/login">
+                  <div
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="flex items-center gap-3 px-4 py-3 rounded-lg transition-all text-sm font-medium cursor-pointer text-primary hover:bg-primary/10"
+                  >
+                    <LogIn className="h-4 w-4 shrink-0" />
+                    Sign in
+                  </div>
+                </Link>
+              )}
+            </div>
           </div>
         </div>
       )}

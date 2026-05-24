@@ -23,14 +23,16 @@ import { motion } from "framer-motion";
 export default function LogDetail() {
   const [, params] = useRoute("/log/:id");
   const [, setLocation] = useLocation();
-  const logId = params?.id ? parseInt(params.id) : 0;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const logId = (params?.id ?? "") as any;
   const queryClient = useQueryClient();
 
   const [selectedExerciseId, setSelectedExerciseId] = useState("");
   const [reps, setReps] = useState("");
   const [weight, setWeight] = useState("");
 
-  const { data: log, isLoading } = useGetWorkoutLog(logId, { query: { enabled: !!logId, queryKey: getGetWorkoutLogQueryKey(logId) } });
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const { data: log, isLoading } = useGetWorkoutLog(logId, { query: { enabled: !!logId, queryKey: getGetWorkoutLogQueryKey(logId as any) } });
   const { data: exercises } = useListExercises({});
 
   const updateLog = useUpdateWorkoutLog();
@@ -39,11 +41,13 @@ export default function LogDetail() {
   const deleteSet = useDeleteSet();
 
   const invalidate = () => {
-    queryClient.invalidateQueries({ queryKey: getGetWorkoutLogQueryKey(logId) });
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    queryClient.invalidateQueries({ queryKey: getGetWorkoutLogQueryKey(logId as any) });
     queryClient.invalidateQueries({ queryKey: getListWorkoutLogsQueryKey() });
   };
 
   const handleMarkComplete = () => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     updateLog.mutate(
       { id: logId, data: { status: "completed" } },
       { onSuccess: invalidate }
@@ -60,14 +64,14 @@ export default function LogDetail() {
 
   const handleAddSet = () => {
     if (!selectedExerciseId || !reps) return;
-    const exerciseId = parseInt(selectedExerciseId);
-    const setNumber = (log?.sets?.filter((s) => s.exerciseId === exerciseId).length ?? 0) + 1;
+    const setNumber = (log?.sets?.filter((s) => s.exerciseId === (selectedExerciseId as any)).length ?? 0) + 1;
 
     addSet.mutate(
       {
         id: logId,
         data: {
-          exerciseId,
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          exerciseId: selectedExerciseId as any,
           setNumber,
           reps: parseInt(reps),
           ...(weight ? { weightKg: parseFloat(weight) } : {}),
@@ -83,7 +87,8 @@ export default function LogDetail() {
     );
   };
 
-  const handleDeleteSet = (setId: number) => {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const handleDeleteSet = (setId: any) => {
     deleteSet.mutate(
       { logId, setId },
       { onSuccess: invalidate }
@@ -110,10 +115,11 @@ export default function LogDetail() {
   }
 
   // Group sets by exercise
-  const setsByExercise: Record<number, { name: string; sets: typeof log.sets }> = {};
+  const setsByExercise: Record<string, { name: string; sets: typeof log.sets }> = {};
   for (const s of log.sets ?? []) {
-    if (!setsByExercise[s.exerciseId]) setsByExercise[s.exerciseId] = { name: s.exerciseName, sets: [] };
-    setsByExercise[s.exerciseId].sets.push(s);
+    const exId = String(s.exerciseId);
+    if (!setsByExercise[exId]) setsByExercise[exId] = { name: s.exerciseName, sets: [] };
+    setsByExercise[exId].sets.push(s);
   }
 
   return (

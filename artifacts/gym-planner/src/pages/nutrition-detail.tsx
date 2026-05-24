@@ -23,8 +23,9 @@ const goalLabel: Record<string, string> = {
 
 export default function NutritionDetail() {
   const [, params] = useRoute("/nutrition/:id");
-  const id = params?.id ? parseInt(params.id) : 0;
-  const { data: guide, isLoading } = useGetNutritionGuide(id, { query: { enabled: !!id, queryKey: getGetNutritionGuideQueryKey(id) } });
+  const id = params?.id ?? "";
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const { data: guide, isLoading } = useGetNutritionGuide(id as any, { query: { enabled: !!id, queryKey: getGetNutritionGuideQueryKey(id as any) } });
 
   if (isLoading) {
     return (

@@ -1,13 +1,11 @@
 import { Router } from "express";
-import { db } from "@workspace/db";
-import { nutritionGuidesTable } from "@workspace/db";
-import { eq } from "drizzle-orm";
+import { NutritionGuide } from "../models/NutritionGuide.js";
 
 const router = Router();
 
-function formatGuide(g: typeof nutritionGuidesTable.$inferSelect) {
+function formatGuide(g: any) {
   return {
-    id: g.id,
+    id: g._id.toString(),
     name: g.name,
     goal: g.goal,
     level: g.level ?? null,
@@ -16,14 +14,14 @@ function formatGuide(g: typeof nutritionGuidesTable.$inferSelect) {
     carbsG: g.carbsG,
     fatG: g.fatG,
     description: g.description ?? null,
-    tips: (g.tips as string[]) ?? [],
-    sampleMeals: (g.sampleMeals as Array<{ name: string; time: string; foods: string[]; calories?: number }>) ?? [],
+    tips: g.tips ?? [],
+    sampleMeals: g.sampleMeals ?? [],
   };
 }
 
 router.get("/", async (req, res) => {
   try {
-    const guides = await db.select().from(nutritionGuidesTable).orderBy(nutritionGuidesTable.id);
+    const guides = await NutritionGuide.find().sort({ _id: 1 }).lean();
     res.json(guides.map(formatGuide));
   } catch (err) {
     req.log.error({ err }, "Failed to list nutrition guides");
@@ -33,9 +31,8 @@ router.get("/", async (req, res) => {
 
 router.get("/:id", async (req, res) => {
   try {
-    const id = parseInt(req.params.id, 10);
-    const [guide] = await db.select().from(nutritionGuidesTable).where(eq(nutritionGuidesTable.id, id)).limit(1);
-    if (!guide) return res.status(404).json({ error: "Not found" });
+    const guide = await NutritionGuide.findById(req.params.id).lean();
+    if (!guide) { res.status(404).json({ error: "Not found" }); return; }
     res.json(formatGuide(guide));
   } catch (err) {
     req.log.error({ err }, "Failed to get nutrition guide");

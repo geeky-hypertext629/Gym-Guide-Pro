@@ -1,5 +1,4 @@
 import { Router } from "express";
-import { CalculateTdeeBody } from "@workspace/api-zod";
 
 const router = Router();
 
@@ -11,7 +10,7 @@ const activityMultipliers: Record<string, number> = {
   very_active: 1.9,
 };
 
-const bmiCategories = (bmi: number) => {
+const bmiCategory = (bmi: number) => {
   if (bmi < 18.5) return "Underweight";
   if (bmi < 25) return "Normal weight";
   if (bmi < 30) return "Overweight";
@@ -20,12 +19,20 @@ const bmiCategories = (bmi: number) => {
 
 router.post("/tdee", async (req, res) => {
   try {
-    const parsed = CalculateTdeeBody.safeParse(req.body);
-    if (!parsed.success) return res.status(400).json({ error: "Invalid request body" });
+    const { weightKg, heightCm, ageYears, sex, activityLevel, goal } = req.body as {
+      weightKg?: number;
+      heightCm?: number;
+      ageYears?: number;
+      sex?: string;
+      activityLevel?: string;
+      goal?: string;
+    };
 
-    const { weightKg, heightCm, ageYears, sex, activityLevel, goal } = parsed.data;
+    if (!weightKg || !heightCm || !ageYears || !sex || !activityLevel || !goal) {
+      res.status(400).json({ error: "All fields are required" });
+      return;
+    }
 
-    // Mifflin-St Jeor BMR
     const bmr = sex === "male"
       ? 10 * weightKg + 6.25 * heightCm - 5 * ageYears + 5
       : 10 * weightKg + 6.25 * heightCm - 5 * ageYears - 161;
@@ -38,12 +45,10 @@ router.post("/tdee", async (req, res) => {
     else if (goal === "fat_loss") targetCalories = tdee - 500;
     else targetCalories = tdee;
 
-    // Macros
-    const proteinG = Math.round(weightKg * 2.0); // 2g/kg
+    const proteinG = Math.round(weightKg * 2.0);
     const fatG = Math.round((targetCalories * 0.25) / 9);
     const carbsG = Math.round((targetCalories - proteinG * 4 - fatG * 9) / 4);
 
-    // BMI
     const heightM = heightCm / 100;
     const bmi = weightKg / (heightM * heightM);
 
@@ -55,7 +60,7 @@ router.post("/tdee", async (req, res) => {
       carbsG: Math.max(0, carbsG),
       fatG,
       bmi: Math.round(bmi * 10) / 10,
-      bmiCategory: bmiCategories(bmi),
+      bmiCategory: bmiCategory(bmi),
     });
   } catch (err) {
     req.log.error({ err }, "Failed to calculate TDEE");

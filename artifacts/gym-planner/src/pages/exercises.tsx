@@ -9,6 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Button } from "@/components/ui/button";
 import { Search, Dumbbell, ChevronRight, X } from "lucide-react";
 import { motion } from "framer-motion";
+import { getGifUrl } from "@/lib/exercise-gifs";
 
 const EQUIPMENT_OPTIONS = ["barbell", "dumbbell", "cable", "machine", "bodyweight", "kettlebell"];
 const DIFFICULTY_OPTIONS = ["beginner", "intermediate", "advanced"];
@@ -27,7 +28,7 @@ export default function Exercises() {
 
   const params = {
     ...(search ? { search } : {}),
-    ...(muscleId ? { muscleId: parseInt(muscleId) } : {}),
+    ...(muscleId ? { muscleId: muscleId as any } : {}),
     ...(equipment ? { equipment } : {}),
     ...(difficulty ? { difficulty } : {}),
   };
@@ -121,16 +122,38 @@ export default function Exercises() {
               transition={{ delay: idx * 0.03 }}
             >
               <Link href={`/exercises/${ex.id}`}>
-                <Card data-testid={`card-exercise-${ex.id}`} className="h-full hover:border-primary/50 hover:shadow-md transition-all cursor-pointer group">
+                <Card data-testid={`card-exercise-${ex.id}`} className="h-full hover:border-primary/50 hover:shadow-md transition-all cursor-pointer group overflow-hidden">
+                  {/* GIF thumbnail */}
+                  {(() => {
+                    const gifUrl = getGifUrl(ex.name);
+                    return gifUrl ? (
+                      <div className="relative h-44 bg-muted overflow-hidden">
+                        <img
+                          src={gifUrl}
+                          alt={ex.name}
+                          className="w-full h-full object-cover"
+                          onError={(e) => { (e.currentTarget.parentElement as HTMLElement).style.display = "none"; }}
+                        />
+                        <Badge variant="outline" className={`absolute top-2 left-2 ${difficultyColor[ex.difficulty] ?? ""}`}>
+                          {ex.difficulty}
+                        </Badge>
+                      </div>
+                    ) : (
+                      <div className="relative h-44 bg-muted flex flex-col items-center justify-center gap-2 text-muted-foreground">
+                        <Dumbbell className="h-8 w-8 opacity-30" />
+                        <span className="text-xs opacity-50">No demo available</span>
+                        <Badge variant="outline" className={`absolute top-2 left-2 ${difficultyColor[ex.difficulty] ?? ""}`}>
+                          {ex.difficulty}
+                        </Badge>
+                      </div>
+                    );
+                  })()}
                   <CardHeader className="pb-2">
                     <div className="flex items-start justify-between gap-2">
                       <CardTitle className="text-base font-semibold leading-tight group-hover:text-primary transition-colors">{ex.name}</CardTitle>
                       <ChevronRight className="h-4 w-4 text-muted-foreground shrink-0 group-hover:text-primary transition-colors mt-0.5" />
                     </div>
                     <div className="flex flex-wrap gap-1 mt-1">
-                      <Badge variant="outline" className={difficultyColor[ex.difficulty] ?? ""}>
-                        {ex.difficulty}
-                      </Badge>
                       <Badge variant="outline" className="text-xs">
                         {ex.equipment}
                       </Badge>

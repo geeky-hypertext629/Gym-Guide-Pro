@@ -1,14 +1,13 @@
 import { Router } from "express";
-import { db } from "@workspace/db";
-import { musclesTable } from "@workspace/db";
+import { Muscle } from "../models/Muscle.js";
 
 const router = Router();
 
 router.get("/", async (req, res) => {
   try {
-    const muscles = await db.select().from(musclesTable).orderBy(musclesTable.bodyPart, musclesTable.name);
+    const muscles = await Muscle.find().sort({ bodyPart: 1, name: 1 }).lean();
     res.json(muscles.map((m) => ({
-      id: m.id,
+      id: m._id.toString(),
       name: m.name,
       bodyPart: m.bodyPart,
       description: m.description ?? null,

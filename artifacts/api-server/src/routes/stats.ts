@@ -1,14 +1,14 @@
 import { Router } from "express";
-import { db } from "@workspace/db";
-import { workoutLogsTable, loggedSetsTable } from "@workspace/db";
-import { eq, gte, desc } from "drizzle-orm";
+import { WorkoutLog } from "../models/WorkoutLog.js";
+import { requireAuth } from "../middleware/auth.js";
 
 const router = Router();
 
+router.use(requireAuth);
+
 router.get("/summary", async (req, res) => {
   try {
-    const allLogs = await db.select().from(workoutLogsTable).orderBy(desc(workoutLogsTable.date));
-    const allSets = await db.select().from(loggedSetsTable);
+    const allLogs = await WorkoutLog.find({ userId: req.userId }).sort({ date: -1 }).lean();
 
     const today = new Date();
     const startOfWeek = new Date(today);
@@ -17,9 +17,10 @@ router.get("/summary", async (req, res) => {
 
     const workoutsThisWeek = allLogs.filter((l) => l.date >= startOfWeekStr).length;
     const totalWorkouts = allLogs.length;
+
+    const allSets = allLogs.flatMap((l) => l.sets ?? []);
     const totalSets = allSets.length;
 
-    // Total volume
     const totalVolumeKg = allSets.reduce((sum, s) => sum + (s.weightKg ?? 0) * s.reps, 0);
 
     // Streak
@@ -36,7 +37,7 @@ router.get("/summary", async (req, res) => {
       }
     }
 
-    // Favorite exercise (most logged)
+    // Favorite exercise
     const exerciseCounts: Record<string, number> = {};
     for (const s of allSets) {
       exerciseCounts[s.exerciseName] = (exerciseCounts[s.exerciseName] ?? 0) + 1;
@@ -60,21 +61,19 @@ router.get("/summary", async (req, res) => {
 
 router.get("/progress/:exerciseId", async (req, res) => {
   try {
-    const exerciseId = parseInt(req.params.exerciseId, 10);
+    const exerciseId = req.params.exerciseId;
 
-    const sets = await db
-      .select({ set: loggedSetsTable, log: workoutLogsTable })
-      .from(loggedSetsTable)
-      .innerJoin(workoutLogsTable, eq(loggedSetsTable.logId, workoutLogsTable.id))
-      .where(eq(loggedSetsTable.exerciseId, exerciseId));
+    const logs = await WorkoutLog.find({ userId: req.userId }).lean();
 
-    // Group by date
     const byDate: Record<string, { weights: number[]; reps: number[]; sets: number }> = {};
-    for (const { set, log } of sets) {
-      if (!byDate[log.date]) byDate[log.date] = { weights: [], reps: [], sets: 0 };
-      byDate[log.date].weights.push(set.weightKg ?? 0);
-      byDate[log.date].reps.push(set.reps);
-      byDate[log.date].sets++;
+    for (const log of logs) {
+      for (const set of log.sets ?? []) {
+        if (set.exerciseId?.toString() !== exerciseId) continue;
+        if (!byDate[log.date]) byDate[log.date] = { weights: [], reps: [], sets: 0 };
+        byDate[log.date].weights.push(set.weightKg ?? 0);
+        byDate[log.date].reps.push(set.reps);
+        byDate[log.date].sets++;
+      }
     }
 
     const points = Object.entries(byDate)

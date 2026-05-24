@@ -11,6 +11,7 @@ const GIF_MAP: Record<string, string> = {
   "Dips": "male-bodyweight-dips-front.gif",
   "Push-ups": "male-bodyweight-pushup-front.gif",
   "Push Ups": "male-bodyweight-pushup-front.gif",
+  "Push-Up": "male-bodyweight-pushup-front.gif",
   "Diamond Push-up": "male-bodyweight-diamond-pushup-front.gif",
   "Incline Push-up": "male-bodyweight-incline-pushup-front.gif",
 
@@ -25,6 +26,8 @@ const GIF_MAP: Record<string, string> = {
   "Upright Row": "male-barbell-upright-row-front_3ROsKgm.gif",
   "Elevated Pike Press": "Elevated Pike Press.gif",
   "Elevated Pike Shoulder Shrug": "Elevated Pike Shoulder Shrug.gif",
+  "Face Pull": "male-barbell-upright-row-front_3ROsKgm.gif",
+  "Arnold Press": "male-dumbbell-seated-overhead-press-front.gif",
 
   // ── Biceps ─────────────────────────────────────────────────────────
   "Barbell Curl": "male-barbell-curl-front_uKPCb8P.gif",
@@ -35,12 +38,14 @@ const GIF_MAP: Record<string, string> = {
   "Chin Ups": "male-bodyweight-chinup-front.gif",
   "Pull-ups": "male-bodyweight-pullup-front.gif",
   "Pull Ups": "male-bodyweight-pullup-front.gif",
+  "Pull-Up": "male-bodyweight-pullup-front.gif",
 
   // ── Triceps ────────────────────────────────────────────────────────
   "Skull Crusher": "male-barbell-skullcrusher-front_qpHWUa8.gif",
   "Skullcrusher": "male-barbell-skullcrusher-front_qpHWUa8.gif",
   "Lying Tricep Extension": "male-barbell-laying-tricep-extensions-front.gif",
   "Tricep Dips": "male-bodyweight-tricep-dips-front.gif",
+  "Tricep Dip": "male-bodyweight-tricep-dips-front.gif",
   "Tricep Pushdown": "male-dumbbell-overhead-tricep-extension-front.gif",
   "Overhead Tricep Extension": "male-dumbbell-overhead-tricep-extension-front.gif",
   "Dumbbell Overhead Tricep Extension": "male-dumbbell-overhead-tricep-extension-front.gif",
