@@ -29,7 +29,6 @@ services:
   - type: web
     name: gym-guide-pro-web
     runtime: static
-    region: singapore
     plan: free
     rootDir: artifacts/gym-planner
     buildCommand: npm install -g pnpm && cd ../.. && pnpm install --frozen-lockfile && cd artifacts/gym-planner && pnpm build
