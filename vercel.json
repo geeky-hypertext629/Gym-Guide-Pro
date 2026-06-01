@@ -2,7 +2,6 @@
   "version": 2,
   "installCommand": "pnpm install --frozen-lockfile",
   "buildCommand": "pnpm --filter @workspace/api-server build && pnpm --filter @workspace/gym-planner build",
-  "outputDirectory": "artifacts/gym-planner/dist/public",
   "rewrites": [
     {
       "source": "/((?!api/).*)",
