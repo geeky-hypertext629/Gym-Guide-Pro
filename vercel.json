@@ -1,13 +1,8 @@
 {
   "version": 2,
-  "buildCommand": "pnpm install --frozen-lockfile && pnpm --filter @workspace/api-server build && pnpm --filter @workspace/gym-planner build",
+  "installCommand": "pnpm install --frozen-lockfile",
+  "buildCommand": "pnpm --filter @workspace/api-server build && pnpm --filter @workspace/gym-planner build",
   "outputDirectory": "artifacts/gym-planner/dist/public",
-  "builds": [
-    {
-      "src": "artifacts/api-server/src/index.ts",
-      "use": "@vercel/node"
-    }
-  ],
   "routes": [
     {
       "src": "/api/(.*)",
