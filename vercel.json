@@ -3,17 +3,15 @@
   "installCommand": "pnpm install --frozen-lockfile",
   "buildCommand": "pnpm --filter @workspace/api-server build && pnpm --filter @workspace/gym-planner build",
   "outputDirectory": "artifacts/gym-planner/dist/public",
-  "routes": [
+  "rewrites": [
     {
-      "src": "/api/(.*)",
-      "dest": "artifacts/api-server/src/index.ts"
-    },
-    {
-      "handle": "filesystem"
-    },
-    {
-      "src": "/(.*)",
-      "dest": "/index.html"
+      "source": "/((?!api/).*)",
+      "destination": "/index.html"
     }
-  ]
+  ],
+  "functions": {
+    "artifacts/api-server/src/index.ts": {
+      "runtime": "nodejs20.x"
+    }
+  }
 }
