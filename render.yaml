@@ -6,7 +6,7 @@ services:
     region: singapore
     plan: free
     rootDir: artifacts/api-server
-    buildCommand: corepack prepare pnpm@11.1.3 --activate && cd ../.. && pnpm install --frozen-lockfile && cd artifacts/api-server && pnpm build
+    buildCommand: cd ../.. && pnpm install --frozen-lockfile && cd artifacts/api-server && pnpm build
     startCommand: node --enable-source-maps ./dist/index.mjs
     healthCheckPath: /api/exercises
     envVars:
@@ -14,6 +14,8 @@ services:
         value: production
       - key: PORT
         value: 3000
+      - key: PNPM_VERSION
+        value: 11.1.3
       - key: MONGODB_URI
         sync: false          # set this manually in the Render dashboard
       - key: JWT_SECRET
@@ -30,7 +32,7 @@ services:
     name: gym-guide-pro-web
     runtime: static
     rootDir: artifacts/gym-planner
-    buildCommand: corepack prepare pnpm@11.1.3 --activate && cd ../.. && pnpm install --frozen-lockfile && cd artifacts/gym-planner && pnpm build
+    buildCommand: cd ../.. && pnpm install --frozen-lockfile && cd artifacts/gym-planner && pnpm build
     staticPublishPath: dist/public
     headers:
       - path: /*
@@ -44,6 +46,8 @@ services:
         source: /*
         destination: /index.html
     envVars:
+      - key: PNPM_VERSION
+        value: 11.1.3
       - key: VITE_API_URL
         fromService:
           name: gym-guide-pro-api
