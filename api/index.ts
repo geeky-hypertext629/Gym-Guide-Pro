@@ -6,5 +6,5 @@ const boot = connectAndSeed().then(() => { ready = true; });
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (!ready) await boot;
-  app(req as any, res as any);
+  (app as any)(req, res);
 }
