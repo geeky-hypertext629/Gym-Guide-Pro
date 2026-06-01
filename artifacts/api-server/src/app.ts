@@ -1,5 +1,5 @@
 import "dotenv/config";
-import express, { type Express } from "express";
+import express, { type Application } from "express";
 import cors from "cors";
 import { pinoHttp } from "pino-http";
 import mongoose from "mongoose";
@@ -7,7 +7,7 @@ import router from "./routes/index.js";
 import { logger } from "./lib/logger.js";
 import { seedDatabase } from "./seed.js";
 
-const app: Express = express();
+const app: Application = express();
 
 app.use(
   pinoHttp({
