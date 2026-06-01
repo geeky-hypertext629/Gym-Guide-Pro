@@ -10,8 +10,6 @@ out-tsc
 
 # dependencies
 node_modules
-package-lock.json
-yarn.lock
 
 # IDEs and editors
 /.idea
@@ -49,8 +47,4 @@ Thumbs.db
 # Replit
 .cache/
 .local/
-
-# Environment files (never commit secrets)
-.env
-.env.local
-.env.*.local
+replit.md
