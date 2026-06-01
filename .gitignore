@@ -49,3 +49,8 @@ Thumbs.db
 .cache/
 .local/
 replit.md
+
+# Environment secrets — never commit
+.env
+.env.local
+.env.*.local
