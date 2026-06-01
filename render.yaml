@@ -6,7 +6,7 @@ services:
     region: singapore
     plan: free
     rootDir: artifacts/api-server
-    buildCommand: corepack enable && cd ../.. && pnpm install --frozen-lockfile && cd artifacts/api-server && pnpm build
+    buildCommand: corepack prepare pnpm@11.1.3 --activate && cd ../.. && pnpm install --frozen-lockfile && cd artifacts/api-server && pnpm build
     startCommand: node --enable-source-maps ./dist/index.mjs
     healthCheckPath: /api/exercises
     envVars:
@@ -30,7 +30,7 @@ services:
     name: gym-guide-pro-web
     runtime: static
     rootDir: artifacts/gym-planner
-    buildCommand: corepack enable && cd ../.. && pnpm install --frozen-lockfile && cd artifacts/gym-planner && pnpm build
+    buildCommand: corepack prepare pnpm@11.1.3 --activate && cd ../.. && pnpm install --frozen-lockfile && cd artifacts/gym-planner && pnpm build
     staticPublishPath: dist/public
     headers:
       - path: /*
